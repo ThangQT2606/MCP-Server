@@ -14,11 +14,11 @@ from langgraph.checkpoint.memory import MemorySaver
 load_dotenv()
 google_api_key = os.getenv("GOOGLE_API_KEY")
 openai_api_key = os.getenv("OPENAI_API_KEY")
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash-preview-04-17", 
-    api_key=google_api_key, 
-    temperature=0.3
-    )
+# model = ChatGoogleGenerativeAI(
+#     model="gemini-2.0-flash", 
+#     api_key=google_api_key, 
+#     temperature=0.3
+#     )
 
 def llm_openai(api_key: str) -> ChatOpenAI:
     """Load the OpenAI model"""
@@ -33,30 +33,23 @@ def llm_openai(api_key: str) -> ChatOpenAI:
     except Exception as e:
         logger.info(f"Error loading LLM: {e}")
 
-# model = llm_openai(api_key=openai_api_key)
-async def check() -> str:
-    async with sse_client("http://localhost:8000/sse") as streams:
+model = llm_openai(api_key=openai_api_key)
+async def main():
+    async with sse_client("http://localhost:3000/sse") as streams:
         async with ClientSession(*streams) as session:
             await session.initialize()
-
-            # List avail tool
-            # tools = await session.list_tools()
-            # print(tools)
             tools = await load_mcp_tools(session)
             print(f"Tools: {tools}")
-            # result = await session.call_tool("get_weather", {"location": "Hồ tây - Hà Nội"})
-            # print(result.content)
-    return tools
+            
+            agent = create_react_agent(model=model, tools=tools, checkpointer=MemorySaver())
 
-async def main() -> str:
-    tools = await check()
-    agent = create_react_agent(model=model, tools=tools, checkpointer=MemorySaver())
-    while True:
-        query = input("Enter your query: ")
-        agent_response = await agent.ainvoke(
-                        {"messages": [{"role": "user", "content": query}]}, 
-                        config={"configurable": {"thread_id": 1}})
-        print(agent_response["messages"][-1].content)
+            while True:
+                query = input("Enter your query: ")
+                agent_response = await agent.ainvoke(
+                    {"messages": [{"role": "user", "content": query}]},
+                    config={"configurable": {"thread_id": 1}}
+                )
+                print(agent_response["messages"][-1].content)
 
 if __name__ == "__main__":
     import asyncio

@@ -13,14 +13,15 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 load_dotenv()
-# model = ChatOpenAI(model="gpt-4o")
-google_api_key = os.getenv("GOOGLE_API_KEY")
+
+# google_api_key = os.getenv("GOOGLE_API_KEY")
 openai_api_key = os.getenv("OPENAI_API_KEY")
-model = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash-preview-04-17", 
-    api_key=google_api_key, 
-    temperature=0.3
-    )
+model = ChatOpenAI(model="gpt-4.1", api_key=openai_api_key, temperature=0.3)
+# model = ChatGoogleGenerativeAI(
+#     model="gemini-2.5-flash-preview-04-17", 
+#     api_key=google_api_key, 
+#     temperature=0.3
+#     )
 print(Path(__file__).parent.parent/"server"/"math_server.py")
 print(type(Path(__file__).parent.parent/"server"/"math_server.py"))
 async def main():
@@ -40,7 +41,7 @@ async def main():
 
             # Create and run the agent
             agent = create_react_agent(model=model, tools=tools)
-            agent_response = await agent.ainvoke({"messages": "what's (3 + 5) x 12?"})
+            agent_response = await agent.ainvoke({"messages": "Tính 1/3 + 1/3 + 1/3 + 1/3? Và bạn dùng những tools nào?"})
 
             print(agent_response["messages"][-1].content)
 
