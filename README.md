@@ -1,5 +1,7 @@
 # MCP Server Using Python SDK
 
+<img src="assets/MCP_server.gif">
+
 ## 1. Thêm API key cần thiết cho chương trình
 
 Tạo .env trong 2 folder client & server
